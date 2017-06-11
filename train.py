@@ -1,3 +1,10 @@
+#/usr/bin/env python3
+
+# Pr
+
+# This script was heavily inspired by a Medium article written by Illia Polosukhin:
+# https://medium.com/@ilblackdragon/tensorflow-text-classification-615198df9231
+
 from process_text import process_text
 #import tflearn
 import re
@@ -20,6 +27,8 @@ start = datetime.now()
 
 max_doc_length = 600
 embedding_size = 10
+train_sample_size = 10000
+test_sample_size = 1000
 
 ###############################################################################
 # READING IN DATA

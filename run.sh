@@ -5,5 +5,7 @@
 #SBATCH --qos=gpu_access
 #SBATCH --gres=gpu:1
 
+# Run train.py on SLURM scheduling system
+
 module add tensorflow python
 python3 train.py
