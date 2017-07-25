@@ -5,7 +5,14 @@
 # This script was heavily inspired by a Medium article written by Illia Polosukhin:
 # https://medium.com/@ilblackdragon/tensorflow-text-classification-615198df9231
 
-from process_text import process_text
+###############################################################################
+# todo list
+
+# should I scramble the years during training?
+
+##############################################################################
+
+#from process_text import process_text
 #import tflearn
 import re
 import random
@@ -17,6 +24,7 @@ import tensorflow as tf
 from sklearn import metrics
 from datetime import datetime
 #from tensorflow.contrib.layers.python.layers import encoders
+import data_setup
 
 learn = tf.contrib.learn
 
@@ -25,6 +33,7 @@ start = datetime.now()
 ###############################################################################
 # PARAMETERS
 
+years = ['1986', '2016']
 max_doc_length = 600
 embedding_size = 10
 train_sample_size = 10000
@@ -33,62 +42,18 @@ test_sample_size = 1000
 ###############################################################################
 # READING IN DATA
 
-def get_records(split_set):
-
-	'''
-	Function to get grant data from files into lists. Any Records with no abstract data are skipped.
-	'''
-
-	record_list_1986 = []
-	record_list_2016 = []
-
-	with open('sample/1986_' + split_set + '.csv', 'r') as f:
-
-		for line in f:
-			try:
-				match = re.search('[0-9]+,(.*)', line).group(1)
-				if match:
-					record_list_1986.append(match)
-			except:
-				pass
-
-		label_list_1986 = [0] * len(record_list_1986)
-
-	with open('sample/2016_' + split_set + '.csv', 'r') as f:
-
-		for line in f:
-			try:
-				match = re.search('[0-9]+,(.*)', line).group(1)
-				if match:
-					record_list_2016.append(match)
-			except:
-				pass
-
-		label_list_2016 = [1] * len(record_list_2016)
-
-	# Combine into one set
-
-	record_list = record_list_1986 + record_list_2016
-	label_list = label_list_1986 + label_list_2016
-
-	df = pd.DataFrame({'record' : record_list, 'label' : label_list}, index = range(len(record_list)))
-	# Scramble
-
-	df = df.sample(frac = 1).reset_index(drop = True)
-
-	return(df)
-
 print(str(datetime.now()) +  ": Reading data...")
 
-train = get_records('train')
-test = get_records('test')
+data_set = data_setup.dataSet(years)
+data_set.load_train(train_sample_size)
+data_set.load_test(test_sample_size)
 
-# one-hot encoding
-#test_index = len(train['label'].tolist())
-#labels = train['label'].tolist() + test['label'].tolist()
-#labels = tf.one_hot(labels)
-#train_labels = 
+train = data_set.dump_data("train")
+test = data_set.dump_data("test")
 
+print(train.head(100))
+
+#exit(0)
 ###############################################################################
 # TRAINING MODEL
 
@@ -105,7 +70,7 @@ vocab_processor = learn.preprocessing.VocabularyProcessor(max_doc_length)
 train_rec = np.array(list(vocab_processor.fit_transform(train.record))) 
 test_rec = np.array(list(vocab_processor.transform(test.record)))
 
-
+print(train_rec[1])
 
 n_words = len(vocab_processor.vocabulary_)
 
