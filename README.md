@@ -3,21 +3,24 @@ Science has made staggering advances in the last three decades. Perhaps inevitab
 
 ## Data aquisition
 
-###download_files.sh
+### download_files.sh
 Downloads grant abstract data from the NIH website.
 
 ## Analysis
 
-###text_mining.R
+### grant_text_mining.Rmd
 Visualization of word usage and comparison between years
 
-## Deep learning experiment
+## Deep learning experiment (RNN)
 
-###train.py
+### train.py
 RNN for classifying abstracts by year
 
-###run.sh
+### run.sh
 Run train.py on SLURM cluster
 
-###data_setup.py
+### data_setup.py
 Utils for train.py
+
+### generator.py
+Text generator based on grant data
