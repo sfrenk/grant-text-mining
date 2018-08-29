@@ -13,20 +13,45 @@ import argparse
 
 # Params
 SEQ_LENGTH=50
-
+INPUT_COUNT=1000
 HIDDEN_DIM=500
 LAYER_NUM=2
 BATCH_SIZE=50
 GENERATE_LENGTH=500
 
-nb_epoch = 3
+
 #################### Data Pre-processing #######################
 
-# Open the data
-data = open(DATA_DIR, 'r').read()
+# Get input data. This is a list INPUT_COUNT lists of words. Each list of words contains SEQ_LENGTH words
 
-# Determine vocab (all possible chars)
-chars = list(set(data))
+data = []
+seq = []
+data_counter = 0
+seq_counter = 0
+with open("data/2016.csv") as f:
+    
+    for line in f:
+        for word in line.split():
+            if data_counter == INPUT_COUNT:
+                break
+            elif seq_counter == SEQ_LENGTH+1:
+                data.append(seq)
+                seq = []
+                seq_counter = 0
+                data_counter += 1
+            seq.append(word)
+            seq_counter += 1
+        else:
+            continue
+        break
+
+# Determine vocab (all possible words)
+all_words = []
+for seq in data:
+    for word in seq:
+        all_words.append(word)
+
+chars = list(set(all_words))
 VOCAB_SIZE = len(chars)
 
 # Create dictionaries for encoding/decoding the vocab
@@ -34,13 +59,13 @@ ix_to_char = {ix:char for ix, char in enumerate(chars)}
 char_to_ix = {char:ix for ix, char in enumerate(chars)}
 
 # Create input
-X = np.zeros((len(data)/SEQ_LENGTH, SEQ_LENGTH, VOCAB_SIZE))
-y = np.zeros((len(data)/SEQ_LENGTH, SEQ_LENGTH, VOCAB_SIZE))
+X = np.zeros((INPUT_COUNT, SEQ_LENGTH, VOCAB_SIZE))
+y = np.zeros((INPUT_COUNT, SEQ_LENGTH, VOCAB_SIZE))
 
-for i in range(0, len(data)/SEQ_LENGTH):
+for i in range(INPUT_COUNT):
 
 	# Select sequence of chars
-    X_sequence = data[i*SEQ_LENGTH:(i+1)*SEQ_LENGTH]
+    X_sequence = data[i][0:SEQ_LENGTH]
     
     # Encode sequence
     X_sequence_ix = [char_to_ix[value] for value in X_sequence]
@@ -52,9 +77,10 @@ for i in range(0, len(data)/SEQ_LENGTH):
     X[i] = input_sequence
 
     # Create output object. This is simply the input sequence shifted by one (as you want the neural network to predict the next char in a sequence)
-    y_sequence = data[i*SEQ_LENGTH+1:(i+1)*SEQ_LENGTH+1]
+    y_sequence = data[i][1:SEQ_LENGTH+1]
     y_sequence_ix = [char_to_ix[value] for value in y_sequence]
     target_sequence = np.zeros((SEQ_LENGTH, VOCAB_SIZE))
+
     for j in range(SEQ_LENGTH):
         target_sequence[j][y_sequence_ix[j]] = 1.
     y[i] = target_sequence
@@ -71,17 +97,10 @@ model.add(Activation('softmax'))
 model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
 
 # Run model
-while True:
-    print('\n\n')
-    model.fit(X, y, batch_size=BATCH_SIZE, verbose=1, nb_epoch=1)
-    nb_epoch += 1
-    generate_text(model, GENERATE_LENGTH)
-    if nb_epoch % 10 == 0:
-        model.save_weights('checkpoint_{}_epoch_{}.hdf5'.format(HIDDEN_DIM, nb_epoch))
 
 def generate_text(model, length):
 
-	# Initialize sequence with random char
+    # Initialize sequence with random char
     ix = [np.random.randint(VOCAB_SIZE)]
     y_char = [ix_to_char[ix[-1]]]
 
@@ -93,3 +112,13 @@ def generate_text(model, length):
         ix = np.argmax(model.predict(X[:, :i+1, :])[0], 1)
         y_char.append(ix_to_char[ix[-1]])
     return ('').join(y_char)
+
+nb_epoch = 0
+while True:
+    print('\n\n')
+    model.fit(X, y, batch_size=BATCH_SIZE, verbose=1, nb_epoch=1)
+    nb_epoch += 1
+    generate_text(model, GENERATE_LENGTH)
+    if nb_epoch % 10 == 0:
+        model.save_weights('checkpoint_{}_epoch_{}.hdf5'.format(HIDDEN_DIM, nb_epoch))
+        break

@@ -3,24 +3,22 @@ Science has made staggering advances in the last three decades. Perhaps inevitab
 
 ## Data aquisition
 
-### download_files.sh
-Downloads grant abstract data from the NIH website.
+I obtained a sample of grant abstracts from the NIH website using the script
+[download_files.sh](RNN/download_files.sh)
 
 ## Analysis
 
-### grant_text_mining.Rmd
-Visualization of word usage and comparison between years
+Visualization of word usage and comparison between years using R can be found in the [analysis](analysis) directory.
 
 ## Deep learning experiment (RNN)
 
-### train.py
+I built a [recurrent neural net (RNN)](RNN) that can predict which decade a grant abstract came from based on the text alone. I am currently working on a RNN that can generate grant abstracts.
+
+### keras_classify.py
 RNN for classifying abstracts by year
 
 ### run.sh
 Run train.py on SLURM cluster
-
-### data_setup.py
-Utils for train.py
 
 ### generator.py
 Text generator based on grant data

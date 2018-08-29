@@ -8,4 +8,5 @@
 # Run keras_classify.py on SLURM scheduling system
 
 module add tensorflow python
-python3 keras_classify.py
+#python3 keras_classify.py
+python3 generator.py

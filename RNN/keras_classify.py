@@ -6,16 +6,15 @@
 ###############################################################################
 # todo list
 
-# should I scramble the years during training?
-
 ##############################################################################
 
 from __future__ import print_function
 import re
-import random
+import gzip
+#import random
 import numpy as np
 from datetime import datetime
-import data_setup
+#import data_setup
 from keras.preprocessing import sequence
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Embedding
@@ -26,6 +25,7 @@ from keras.utils import to_categorical
 
 
 start = datetime.now()
+np.random.seed(123)
 
 ###############################################################################
 # PARAMETERS
@@ -60,24 +60,42 @@ test_labels = []
 
 for year in years:    
 
-    f = open("data/" + year + ".csv")
-    for i in range(int(train_sample_size/len(years))):
-        train_abstracts.append(f.readline().strip())
-        train_labels.append(year)
+    with open("data/" + year + ".csv") as f:
+      
+        for i in range(int(train_sample_size/len(years))):
+          train_abstracts.append(f.readline().strip())
+          train_labels.append(year)
 
-    for i in range(int(validation_sample_size/len(years))):
-        validation_abstracts.append(f.readline().strip())
-        validation_labels.append(year)
+        for i in range(int(validation_sample_size/len(years))):
+          validation_abstracts.append(f.readline().strip())
+          validation_labels.append(year)
 
-    for i in range(int(test_sample_size/len(years))):
-        test_abstracts.append(f.readline().strip())
-        test_labels.append(year)
+        for i in range(int(test_sample_size/len(years))):
+          test_abstracts.append(f.readline().strip())
+          test_labels.append(year)
 
-    f.close()
 
 print(len(train_abstracts), 'train sequences')
 print(len(validation_abstracts), 'validation sequences')
 print(len(test_abstracts), 'test sequences')
+
+# Scramble years
+def scramble_years(abstracts_list, labels_list):
+  
+    if len(abstracts_list) != len(labels_list):
+        print("ERROR: Abstracts and Labels lists must have same length!")
+        sys.exit(1)
+
+    # Make index for random permutation
+    scramble_index = np.random.permutation(np.arange(len(abstracts_list)))
+    abstracts_list_scrambled = [abstracts_list[i] for i in scramble_index]
+    labels_list_scrambled = [labels_list[i] for i in scramble_index]
+
+    return(abstracts_list_scrambled, labels_list_scrambled)
+
+train_abstracts, train_labels = scramble_years(train_abstracts, train_labels)
+validation_abstracts, validation_labels = scramble_years(validation_abstracts, validation_labels)
+test_abstracts, test_labels = scramble_years(test_abstracts, test_labels)
 
 # Encode labels
 year_ints = dict(zip(years, [ x for x in range(len(years))]))

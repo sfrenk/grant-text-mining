@@ -65,7 +65,7 @@ for year in ${years[@]}; do
 	# Take sample for R analysis
 	head -1000 ./data/${year}.csv > ./data/R/${year}.csv
 
-	rm ./data/${year}.csv
+	#rm ./data/${year}.csv
 
 done
 
